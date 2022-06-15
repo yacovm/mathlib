@@ -481,6 +481,7 @@ func TestJSONMarshalerFails(t *testing.T) {
 
 func TestCurves(t *testing.T) {
 	for _, curve := range Curves {
+		curve = CurveWithStats(curve)
 		testNotZeroAfterAdd(t, curve)
 		testModAdd(t, curve)
 		runZrTest(t, curve)

@@ -61,6 +61,9 @@ var Curves []*Curve = []*Curve{
 func CurveWithStats(c *Curve) *Curve {
 	c2 := *c
 	c2.c = &stats.Curve{Curve: c2.c}
+	c2.GenG1.g1 = &stats.G1{G1: c2.GenG1.g1}
+	c2.GenG2.g2 = &stats.G2{G2: c2.GenG2.g2}
+	c2.GenGt.gt = &stats.Gt{Gt: c2.GenGt.gt}
 	return &c2
 }
 
