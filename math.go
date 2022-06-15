@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/IBM/mathlib/driver/stats"
+
 	"github.com/IBM/mathlib/driver"
 	"github.com/IBM/mathlib/driver/amcl"
 	"github.com/IBM/mathlib/driver/gurvy"
@@ -26,9 +28,11 @@ const (
 	FP256BN_AMCL_MIRACL
 )
 
+var Statistics = false
+
 var Curves []*Curve = []*Curve{
 	{
-		c:          &amcl.Fp256bn{},
+		c:          curveWithStats(&amcl.Fp256bn{}),
 		GenG1:      &G1{g1: (&amcl.Fp256bn{}).GenG1(), curveID: FP256BN_AMCL},
 		GenG2:      &G2{g2: (&amcl.Fp256bn{}).GenG2(), curveID: FP256BN_AMCL},
 		GenGt:      &Gt{gt: (&amcl.Fp256bn{}).GenGt(), curveID: FP256BN_AMCL},
@@ -37,7 +41,7 @@ var Curves []*Curve = []*Curve{
 		curveID:    FP256BN_AMCL,
 	},
 	{
-		c:          &gurvy.Bn254{},
+		c:          curveWithStats(&gurvy.Bn254{}),
 		GenG1:      &G1{g1: (&gurvy.Bn254{}).GenG1(), curveID: BN254},
 		GenG2:      &G2{g2: (&gurvy.Bn254{}).GenG2(), curveID: BN254},
 		GenGt:      &Gt{gt: (&gurvy.Bn254{}).GenGt(), curveID: BN254},
@@ -46,7 +50,7 @@ var Curves []*Curve = []*Curve{
 		curveID:    BN254,
 	},
 	{
-		c:          &amcl.Fp256Miraclbn{},
+		c:          curveWithStats(&amcl.Fp256Miraclbn{}),
 		GenG1:      &G1{g1: (&amcl.Fp256Miraclbn{}).GenG1(), curveID: FP256BN_AMCL_MIRACL},
 		GenG2:      &G2{g2: (&amcl.Fp256Miraclbn{}).GenG2(), curveID: FP256BN_AMCL_MIRACL},
 		GenGt:      &Gt{gt: (&amcl.Fp256Miraclbn{}).GenGt(), curveID: FP256BN_AMCL_MIRACL},
@@ -54,6 +58,13 @@ var Curves []*Curve = []*Curve{
 		FieldBytes: (&amcl.Fp256Miraclbn{}).FieldBytes(),
 		curveID:    FP256BN_AMCL_MIRACL,
 	},
+}
+
+func curveWithStats(c driver.Curve) driver.Curve {
+	if !Statistics {
+		return c
+	}
+	return &stats.Curve{Curve: c}
 }
 
 /*********************************************************************/
