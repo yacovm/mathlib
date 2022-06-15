@@ -28,56 +28,56 @@ var (
 
 func (c *Curve) Pairing(g2 driver.G2, g1 driver.G1) driver.Gt {
 	atomic.AddUint32(&Pairings, 1)
-	return &Gt{Gt: c.Pairing(g2, g1)}
+	return &Gt{Gt: c.Curve.Pairing(g2, g1)}
 }
 
 func (c *Curve) Pairing2(p2a, p2b driver.G2, p1a, p1b driver.G1) driver.Gt {
 	atomic.AddUint32(&Pairings, 1)
-	return &Gt{Gt: c.Pairing2(p2a, p2b, p1a, p1b)}
+	return &Gt{Gt: c.Curve.Pairing2(p2a, p2b, p1a, p1b)}
 }
 
 func (c *Curve) FExp(gt driver.Gt) driver.Gt {
-	return &Gt{Gt: c.FExp(gt)}
+	return &Gt{Gt: c.Curve.FExp(gt)}
 }
 
 func (c *Curve) GenG1() driver.G1 {
-	return &G1{G1: c.GenG1()}
+	return &G1{G1: c.Curve.GenG1()}
 }
 
 func (c *Curve) GenG2() driver.G2 {
-	return &G2{G2: c.GenG2()}
+	return &G2{G2: c.Curve.GenG2()}
 }
 
 func (c *Curve) GenGt() driver.Gt {
-	return &Gt{Gt: c.GenGt()}
+	return &Gt{Gt: c.Curve.GenGt()}
 }
 
 func (c *Curve) NewG1() driver.G1 {
-	return &G1{G1: c.NewG1()}
+	return &G1{G1: c.Curve.NewG1()}
 }
 
 func (c *Curve) NewG2() driver.G2 {
-	return &G2{G2: c.NewG2()}
+	return &G2{G2: c.Curve.NewG2()}
 }
 
 func (c *Curve) NewG1FromCoords(ix, iy driver.Zr) driver.G1 {
-	return &G1{G1: c.NewG1FromCoords(ix, iy)}
+	return &G1{G1: c.Curve.NewG1FromCoords(ix, iy)}
 }
 
 func (c *Curve) NewG1FromBytes(b []byte) driver.G1 {
-	return &G1{G1: c.NewG1FromBytes(b)}
+	return &G1{G1: c.Curve.NewG1FromBytes(b)}
 }
 
 func (c *Curve) NewG2FromBytes(b []byte) driver.G2 {
-	return &G2{G2: c.NewG2FromBytes(b)}
+	return &G2{G2: c.Curve.NewG2FromBytes(b)}
 }
 
 func (c *Curve) NewGtFromBytes(b []byte) driver.Gt {
-	return &Gt{Gt: c.NewGtFromBytes(b)}
+	return &Gt{Gt: c.Curve.NewGtFromBytes(b)}
 }
 
 func (c *Curve) HashToG1(data []byte) driver.G1 {
-	return &G1{G1: c.HashToG1(data)}
+	return &G1{G1: c.Curve.HashToG1(data)}
 }
 
 type G1 struct {
@@ -127,10 +127,10 @@ type Gt struct {
 
 func (gt *Gt) Mul(x driver.Gt) {
 	atomic.AddUint32(&MultiplicationsGt, 1)
-	gt.Mul(x)
+	gt.Gt.Mul(x)
 }
 
 func (gt *Gt) Exp(x driver.Zr) driver.Gt {
 	atomic.AddUint32(&ExponentiationsGt, 1)
-	return &Gt{Gt: gt.Exp(x)}
+	return &Gt{Gt: gt.Gt.Exp(x)}
 }
