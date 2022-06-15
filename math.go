@@ -28,11 +28,9 @@ const (
 	FP256BN_AMCL_MIRACL
 )
 
-var Statistics = false
-
 var Curves []*Curve = []*Curve{
 	{
-		c:          curveWithStats(&amcl.Fp256bn{}),
+		c:          &amcl.Fp256bn{},
 		GenG1:      &G1{g1: (&amcl.Fp256bn{}).GenG1(), curveID: FP256BN_AMCL},
 		GenG2:      &G2{g2: (&amcl.Fp256bn{}).GenG2(), curveID: FP256BN_AMCL},
 		GenGt:      &Gt{gt: (&amcl.Fp256bn{}).GenGt(), curveID: FP256BN_AMCL},
@@ -41,7 +39,7 @@ var Curves []*Curve = []*Curve{
 		curveID:    FP256BN_AMCL,
 	},
 	{
-		c:          curveWithStats(&gurvy.Bn254{}),
+		c:          &gurvy.Bn254{},
 		GenG1:      &G1{g1: (&gurvy.Bn254{}).GenG1(), curveID: BN254},
 		GenG2:      &G2{g2: (&gurvy.Bn254{}).GenG2(), curveID: BN254},
 		GenGt:      &Gt{gt: (&gurvy.Bn254{}).GenGt(), curveID: BN254},
@@ -50,7 +48,7 @@ var Curves []*Curve = []*Curve{
 		curveID:    BN254,
 	},
 	{
-		c:          curveWithStats(&amcl.Fp256Miraclbn{}),
+		c:          &amcl.Fp256Miraclbn{},
 		GenG1:      &G1{g1: (&amcl.Fp256Miraclbn{}).GenG1(), curveID: FP256BN_AMCL_MIRACL},
 		GenG2:      &G2{g2: (&amcl.Fp256Miraclbn{}).GenG2(), curveID: FP256BN_AMCL_MIRACL},
 		GenGt:      &Gt{gt: (&amcl.Fp256Miraclbn{}).GenGt(), curveID: FP256BN_AMCL_MIRACL},
@@ -60,11 +58,10 @@ var Curves []*Curve = []*Curve{
 	},
 }
 
-func curveWithStats(c driver.Curve) driver.Curve {
-	if !Statistics {
-		return c
-	}
-	return &stats.Curve{Curve: c}
+func CurveWithStats(c *Curve) *Curve {
+	c2 := *c
+	c2.c = &stats.Curve{Curve: c2.c}
+	return &c2
 }
 
 /*********************************************************************/
