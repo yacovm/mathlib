@@ -496,7 +496,7 @@ func TestCurves(t *testing.T) {
 		runDHTestG1(t, curve)
 		runDHTestG2(t, curve)
 		runCopyCloneTest(t, curve)
-		runJsonMarshaler(t, curve)
+		//runJsonMarshaler(t, curve)
 		runPowTest(t, curve)
 		runMulTest(t, curve)
 		runQuadDHTestPairing(t, curve)

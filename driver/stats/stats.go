@@ -28,6 +28,10 @@ var (
 
 func (c *Curve) Pairing(g2 driver.G2, g1 driver.G1) driver.Gt {
 	atomic.AddUint32(&Pairings, 1)
+	_, isStats := g2.(*G2).G2.(*G2)
+	if isStats {
+		return &Gt{Gt: c.Curve.Pairing(g2.(*G2).G2.(*G2).G2, g1.(*G1).G1.(*G1).G1)}
+	}
 	return &Gt{Gt: c.Curve.Pairing(g2.(*G2).G2, g1.(*G1).G1)}
 }
 
