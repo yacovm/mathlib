@@ -28,11 +28,7 @@ var (
 
 func (c *Curve) Pairing(g2 driver.G2, g1 driver.G1) driver.Gt {
 	atomic.AddUint32(&Pairings, 1)
-	_, isStats := g2.(*G2).G2.(*G2)
-	if isStats {
-		return &Gt{Gt: c.Curve.Pairing(g2.(*G2).G2.(*G2).G2, g1.(*G1).G1.(*G1).G1)}
-	}
-	return &Gt{Gt: c.Curve.Pairing(g2.(*G2).G2, g1.(*G1).G1)}
+	return &Gt{Gt: c.Curve.Pairing(innerG2(g2), innerG1(g1))}
 }
 
 func (c *Curve) Pairing2(p2a, p2b driver.G2, p1a, p1b driver.G1) driver.Gt {
@@ -167,4 +163,22 @@ func (gt *Gt) Mul(x driver.Gt) {
 func (gt *Gt) Exp(x driver.Zr) driver.Gt {
 	atomic.AddUint32(&ExponentiationsGt, 1)
 	return &Gt{Gt: gt.Gt.Exp(x)}
+}
+
+func innerG2(g2 driver.G2) driver.G2 {
+	for {
+		_, isStats := g2.(*G2).G2.(*G2)
+		if !isStats {
+			return g2.(*G2).G2
+		}
+	}
+}
+
+func innerG1(g1 driver.G1) driver.G1 {
+	for {
+		_, isStats := g1.(*G1).G1.(*G1)
+		if !isStats {
+			return g1.(*G1).G1
+		}
+	}
 }
