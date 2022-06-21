@@ -9,6 +9,7 @@ package math
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"math"
 	"math/rand"
 	"testing"
@@ -225,6 +226,30 @@ func runHashTest(t *testing.T, c *Curve) {
 	one := gr.Mul(r)
 	assert.True(t, c.GenG1.Equals(one))
 }
+
+func runFooTest(t *testing.T, c *Curve) {
+	g1 := c.HashToG1([]byte{1,2,3})
+	g2 := hashToG2([]byte{1,2,3}, c)
+	g1 = c.GenG1.Mul(c.NewZrFromInt(1))
+	g2 = c.GenG2.Mul(c.NewZrFromInt(1))
+	c.Pairing(g2, g1)
+}
+
+func hashToG2(in []byte, c *Curve) *G2 {
+	g2, err := bn254.HashToCurveG2Svdw(in, []byte{})
+	if err != nil {
+		panic(err)
+	}
+
+	bytes := g2.Bytes()
+	g, err := c.NewG2FromBytes(bytes[:])
+	if err != nil {
+		panic(err)
+	}
+
+	return g
+}
+
 
 func runToFroBytesTest(t *testing.T, c *Curve) {
 	rng, err := c.Rand()
@@ -466,8 +491,8 @@ func TestJSONMarshalerFails(t *testing.T) {
 	err = json.Unmarshal([]byte(`{"element":1}`), gt)
 	assert.EqualError(t, err, "json: cannot unmarshal number into Go struct field curveElement.element of type []uint8")
 
-	// err = json.Unmarshal([]byte(`{"element":"YQo="}`), zr)
-	// assert.EqualError(t, err, "json: cannot unmarshal number into Go struct field curveElement.element of type []uint8")
+	 err = json.Unmarshal([]byte(`{"element":"YQo="}`), zr)
+	 assert.EqualError(t, err, "json: cannot unmarshal number into Go struct field curveElement.element of type []uint8")
 
 	err = json.Unmarshal([]byte(`{"element":"YQo="}`), g1)
 	assert.EqualError(t, err, "failure [runtime error: index out of range [2] with length 2]")
@@ -480,8 +505,7 @@ func TestJSONMarshalerFails(t *testing.T) {
 }
 
 func TestCurves(t *testing.T) {
-	for _, curve := range Curves {
-		curve = CurveWithStats(curve)
+	for _, curve := range []*Curve{Curves[1]} {
 		testNotZeroAfterAdd(t, curve)
 		testModAdd(t, curve)
 		runZrTest(t, curve)
@@ -496,7 +520,7 @@ func TestCurves(t *testing.T) {
 		runDHTestG1(t, curve)
 		runDHTestG2(t, curve)
 		runCopyCloneTest(t, curve)
-		//runJsonMarshaler(t, curve)
+		runJsonMarshaler(t, curve)
 		runPowTest(t, curve)
 		runMulTest(t, curve)
 		runQuadDHTestPairing(t, curve)

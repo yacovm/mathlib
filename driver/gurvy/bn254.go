@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"regexp"
 	"strings"
+	"sync/atomic"
 
 	"github.com/IBM/mathlib/driver"
 	"github.com/IBM/mathlib/driver/common"
@@ -22,6 +23,17 @@ import (
 )
 
 /*********************************************************************/
+
+
+var (
+	Pairings          uint32
+	AdditionsG1       uint32
+	MultiplicationsG1 uint32
+	AdditionsG2       uint32
+	MultiplicationsG2 uint32
+	MultiplicationsGt uint32
+	ExponentiationsGt uint32
+)
 
 type bn254Zr struct {
 	*big.Int
@@ -90,6 +102,7 @@ func (e *bn254G1) Copy() driver.G1 {
 }
 
 func (g *bn254G1) Add(a driver.G1) {
+	atomic.AddUint32(&AdditionsG1, 1)
 	j := &bn254.G1Jac{}
 	j.FromAffine(g.G1Affine)
 	j.AddMixed((*bn254.G1Affine)(a.(*bn254G1).G1Affine))
@@ -97,6 +110,7 @@ func (g *bn254G1) Add(a driver.G1) {
 }
 
 func (g *bn254G1) Mul(a driver.Zr) driver.G1 {
+	atomic.AddUint32(&MultiplicationsG1, 1)
 	gc := &bn254G1{&bn254.G1Affine{}}
 	gc.Clone(g)
 	gc.G1Affine.ScalarMultiplication(g.G1Affine, a.(*bn254Zr).Int)
@@ -105,6 +119,7 @@ func (g *bn254G1) Mul(a driver.Zr) driver.G1 {
 }
 
 func (g *bn254G1) Mul2(e driver.Zr, Q driver.G1, f driver.Zr) driver.G1 {
+	atomic.AddUint32(&MultiplicationsG1, 1)
 	a := g.Mul(e)
 	b := Q.Mul(f)
 	a.Add(b)
@@ -122,6 +137,7 @@ func (g *bn254G1) Bytes() []byte {
 }
 
 func (g *bn254G1) Sub(a driver.G1) {
+	atomic.AddUint32(&AdditionsG1, 1)
 	j, k := &bn254.G1Jac{}, &bn254.G1Jac{}
 	j.FromAffine(g.G1Affine)
 	k.FromAffine(a.(*bn254G1).G1Affine)
@@ -162,6 +178,7 @@ func (e *bn254G2) Copy() driver.G2 {
 }
 
 func (g *bn254G2) Mul(a driver.Zr) driver.G2 {
+	atomic.AddUint32(&MultiplicationsG2, 1)
 	gc := &bn254G2{&bn254.G2Affine{}}
 	gc.Clone(g)
 	gc.G2Affine.ScalarMultiplication(g.G2Affine, a.(*bn254Zr).Int)
@@ -170,6 +187,7 @@ func (g *bn254G2) Mul(a driver.Zr) driver.G2 {
 }
 
 func (g *bn254G2) Add(a driver.G2) {
+	atomic.AddUint32(&AdditionsG2, 1)
 	j := &bn254.G2Jac{}
 	j.FromAffine(g.G2Affine)
 	j.AddMixed((*bn254.G2Affine)(a.(*bn254G2).G2Affine))
@@ -177,6 +195,7 @@ func (g *bn254G2) Add(a driver.G2) {
 }
 
 func (g *bn254G2) Sub(a driver.G2) {
+	atomic.AddUint32(&AdditionsG2, 1)
 	j := &bn254.G2Jac{}
 	j.FromAffine(g.G2Affine)
 	aJac := &bn254.G2Jac{}
@@ -209,6 +228,7 @@ type bn254Gt struct {
 }
 
 func (g *bn254Gt) Exp(x driver.Zr) driver.Gt {
+	atomic.AddUint32(&ExponentiationsGt, 1)
 	copy := &bn254.GT{}
 	copy.Set(g.GT)
 	return &bn254Gt{copy.Exp(g.GT, *x.(*bn254Zr).Int)}
@@ -223,6 +243,7 @@ func (g *bn254Gt) Inverse() {
 }
 
 func (g *bn254Gt) Mul(a driver.Gt) {
+	atomic.AddUint32(&MultiplicationsGt, 1)
 	g.GT.Mul(g.GT, a.(*bn254Gt).GT)
 }
 
@@ -248,6 +269,7 @@ type Bn254 struct {
 }
 
 func (c *Bn254) Pairing(p2 driver.G2, p1 driver.G1) driver.Gt {
+	atomic.AddUint32(&Pairings, 1)
 	t, err := bn254.MillerLoop([]bn254.G1Affine{*p1.(*bn254G1).G1Affine}, []bn254.G2Affine{*p2.(*bn254G2).G2Affine})
 	if err != nil {
 		panic(fmt.Sprintf("pairing failed [%s]", err.Error()))
@@ -257,6 +279,7 @@ func (c *Bn254) Pairing(p2 driver.G2, p1 driver.G1) driver.Gt {
 }
 
 func (c *Bn254) Pairing2(p2a, p2b driver.G2, p1a, p1b driver.G1) driver.Gt {
+	atomic.AddUint32(&Pairings, 1)
 	t, err := bn254.MillerLoop([]bn254.G1Affine{*p1a.(*bn254G1).G1Affine, *p1b.(*bn254G1).G1Affine}, []bn254.G2Affine{*p2a.(*bn254G2).G2Affine, *p2b.(*bn254G2).G2Affine})
 	if err != nil {
 		panic(fmt.Sprintf("pairing 2 failed [%s]", err.Error()))

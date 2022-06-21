@@ -12,8 +12,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/IBM/mathlib/driver/stats"
-
 	"github.com/IBM/mathlib/driver"
 	"github.com/IBM/mathlib/driver/amcl"
 	"github.com/IBM/mathlib/driver/gurvy"
@@ -56,15 +54,6 @@ var Curves []*Curve = []*Curve{
 		FieldBytes: (&amcl.Fp256Miraclbn{}).FieldBytes(),
 		curveID:    FP256BN_AMCL_MIRACL,
 	},
-}
-
-func CurveWithStats(c *Curve) *Curve {
-	c2 := *c
-	c2.c = &stats.Curve{Curve: c2.c}
-	c2.GenG1.g1 = &stats.G1{G1: c2.GenG1.g1}
-	c2.GenG2.g2 = &stats.G2{G2: c2.GenG2.g2}
-	c2.GenGt.gt = &stats.Gt{Gt: c2.GenGt.gt}
-	return &c2
 }
 
 /*********************************************************************/
